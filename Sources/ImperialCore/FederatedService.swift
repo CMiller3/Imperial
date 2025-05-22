@@ -43,3 +43,16 @@ public protocol FederatedService: Sendable {
         completion: @escaping @Sendable (Request, String) async throws -> some AsyncResponseEncodable
     ) throws
 }
+
+
+public protocol FederatedServiceRespectingGroups: Sendable {
+    @discardableResult init(
+        routes: some RoutesBuilder,
+        ignoreSegment: String?,
+        authenticate: String,
+        authenticateCallback: (@Sendable (Request) async throws -> Void)?,
+        callback: String,
+        scope: [String],
+        completion: @escaping @Sendable (Request, String) async throws -> some AsyncResponseEncodable
+    ) throws
+}

@@ -1,10 +1,18 @@
+//
+//  FederatedServiceRouter 2.swift
+//  Imperial
+//
+//  Created by Charlie Miller on 5/21/25.
+//
+
+
 import Foundation
 import Vapor
 import RoutingKit
 
 /// Defines a type that implements the routing to get an access token from an OAuth provider.
 /// See implementations in the `Services/(Google|GitHub)/$0Router.swift` files
-package protocol FederatedServiceRouter: Sendable {
+package protocol FederatedServiceRouterRespectingGroups: Sendable {
     /// An object that gets the client ID and secret from environment variables.
     var tokens: any FederatedServiceTokens { get }
 
@@ -55,9 +63,7 @@ package protocol FederatedServiceRouter: Sendable {
     ///   - router: The router to configure the routes on.
     /// - Throws: N/A
     func configureRoutes(
-        withAuthURL authURL: String,
-        authenticateCallback: (@Sendable (Request) async throws -> Void)?,
-        on router: some RoutesBuilder
+        withAuthURL authURL: String, ignoreSegment: String?,  authenticateCallback: (@Sendable (Request) async throws -> Void)?, on router: some RoutesBuilder
     ) throws
 
     /// Gets an access token from an OAuth provider.
@@ -78,15 +84,19 @@ package protocol FederatedServiceRouter: Sendable {
     @Sendable func callback(_ request: Request) async throws -> Response
 }
 
-extension FederatedServiceRouter {
+extension FederatedServiceRouterRespectingGroups {
     package var codeKey: String { "code" }
     package var errorKey: String { "error" }
     package var callbackHeaders: HTTPHeaders { [:] }
 
     package func configureRoutes(
-        withAuthURL authURL: String, authenticateCallback: (@Sendable (Request) async throws -> Void)?, on router: some RoutesBuilder
+        withAuthURL authURL: String, ignoreSegment: String? = nil,  authenticateCallback: (@Sendable (Request) async throws -> Void)?, on router: some RoutesBuilder
     ) throws {
-        router.get(callbackURL.pathSegments, use: callback)
+        if let pathExclude = ignoreSegment {
+            router.get(callbackURL.pathSegments(excluding: pathExclude), use: callback)
+        } else {
+            router.get(callbackURL.pathSegments, use: callback)
+        }
         router.get(authURL.pathSegments) { req async throws -> Response in
             let redirect: Response = req.redirect(to: try self.authURL(req))
             guard let authenticateCallback else {
@@ -125,7 +135,7 @@ extension FederatedServiceRouter {
 }
 
 /// Convenience URLQueryItems
-extension FederatedServiceRouter {
+extension FederatedServiceRouterRespectingGroups {
     package var clientIDItem: URLQueryItem {
         .init(name: "client_id", value: tokens.clientID)
     }

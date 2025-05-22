@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
 
-struct GoogleRouter: FederatedServiceRouter {
+struct GoogleRouter: FederatedServiceRouterRespectingGroups {
     let tokens: any FederatedServiceTokens
     let callbackCompletion: @Sendable (Request, String) async throws -> any AsyncResponseEncodable
     let scope: [String]
