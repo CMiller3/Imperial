@@ -13,6 +13,6 @@ public struct Microsoft: FederatedServiceRespectingGroups {
         completion: @escaping @Sendable (Request, String) async throws -> some AsyncResponseEncodable
     ) throws {
         try MicrosoftRouter(callback: callback, scope: scope, completion: completion)
-            .configureRoutes(withAuthURL: authenticate, authenticateCallback: authenticateCallback, on: routes)
+            .configureRoutes(withAuthURL: authenticate, ignoreSegment: ignoreSegment, authenticateCallback: authenticateCallback, on: routes)
     }
 }
