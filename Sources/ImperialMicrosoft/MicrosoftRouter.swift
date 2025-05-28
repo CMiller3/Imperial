@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
 
-struct MicrosoftRouter: FederatedServiceRouter {
+struct MicrosoftRouter: FederatedServiceRouterRespectingGroups {
     static let tenantIDEnvKey: String = "MICROSOFT_TENANT_ID"
 
     let tokens: any FederatedServiceTokens
